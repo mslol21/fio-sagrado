@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 90" width="100%" height="100%" fill="none">
+  <!-- Symbol: Sacred Crochet Rosary Cross Loop -->
+  <g transform="translate(10, 5)">
+    <!-- Outer delicate glowing aura -->
+    <circle cx="40" cy="40" r="36" fill="#F5EEE5" opacity="0.6"/>
+    <circle cx="40" cy="40" r="36" stroke="#C7A57F" stroke-width="1" stroke-dasharray="2 3" opacity="0.8"/>
+    
+    <!-- Crochet loop thread (Rosary circle with crochet texture points) -->
+    <circle cx="40" cy="34" r="22" stroke="#9A7655" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Delicate bead knots in crochet style -->
+    <circle cx="40" cy="12" r="2.5" fill="#CA9F53"/>
+    <circle cx="53" cy="16" r="2.2" fill="#C7A57F"/>
+    <circle cx="61" cy="27" r="2.2" fill="#C7A57F"/>
+    <circle cx="61" cy="41" r="2.2" fill="#C7A57F"/>
+    <circle cx="53" cy="52" r="2.2" fill="#C7A57F"/>
+    <circle cx="40" cy="56" r="3" fill="#CA9F53"/>
+    <circle cx="27" cy="52" r="2.2" fill="#C7A57F"/>
+    <circle cx="19" cy="41" r="2.2" fill="#C7A57F"/>
+    <circle cx="19" cy="27" r="2.2" fill="#C7A57F"/>
+    <circle cx="27" cy="16" r="2.2" fill="#C7A57F"/>
+    
+    <!-- Centerpiece & dangling crochet thread with Cross -->
+    <path d="M 40 56 L 40 64" stroke="#9A7655" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="40" cy="65" r="2" fill="#CA9F53"/>
+    <path d="M 40 67 L 40 73" stroke="#9A7655" stroke-width="1.8" stroke-linecap="round"/>
+    
+    <!-- Graceful Latin Cross -->
+    <path d="M 40 70 L 40 82 M 35 74 L 45 74" stroke="#9A7655" stroke-width="2.2" stroke-linecap="round"/>
+    
+    <!-- Center delicate sparkle -->
+    <path d="M 40 28 Q 40 34 46 34 Q 40 34 40 40 Q 40 34 34 34 Q 40 34 40 28 Z" fill="#CA9F53" opacity="0.9"/>
+  </g>
+
+  <!-- Typography -->
+  <g transform="translate(105, 0)">
+    <!-- Brand Title -->
+    <text x="0" y="47" font-family="'Cormorant Garamond', 'Cinzel', 'Playfair Display', Georgia, serif" font-size="34" font-weight="600" fill="#4D4038" letter-spacing="0.5">
+      Fio Sagrado
+    </text>
+    
+    <!-- Subtitle / Tagline -->
+    <text x="2" y="68" font-family="'Manrope', -apple-system, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#9A7655" letter-spacing="3.2" text-transform="uppercase">
+      TERÇOS ARTESANAIS EM CROCHÊ
+    </text>
+    
+    <!-- Small aesthetic artisanal thread flourish line -->
+    <path d="M 2 76 Q 80 77 150 76 T 220 76" stroke="#C7A57F" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.6"/>
+  </g>
+</svg>
