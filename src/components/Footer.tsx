@@ -44,7 +44,7 @@ export const Footer: React.FC = () => {
             <div className="flex gap-2.5">
               {instagramHandle && (
                 <a
-                  href={`https://instagram.com/${instagramHandle}`}
+                  href={`https://instagram.com/${instagramHandle.replace('@', '')}/`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#9A7655] hover:text-white transition-all border border-white/10 text-[#F5EEE5]"
@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
               )}
               {whatsappNum && (
                 <a
-                  href={`https://wa.me/${whatsappNum}`}
+                  href={`https://wa.me/${(whatsappNum || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (whatsappNum || siteConfig.whatsapp).replace(/\D/g, '') : `55${(whatsappNum || siteConfig.whatsapp).replace(/\D/g, '')}`}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-[#25D366] hover:text-white transition-all border border-white/10 text-[#F5EEE5]"

@@ -75,7 +75,7 @@ export const TrustSection: React.FC = () => {
         {whatsappNum && (
           <div className="text-center mt-10">
             <a
-              href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent('Olá! Gostaria de conversar sobre as peças da Fio Sagrado.')}`}
+              href={`https://wa.me/${(whatsappNum || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (whatsappNum || siteConfig.whatsapp).replace(/\D/g, '') : `55${(whatsappNum || siteConfig.whatsapp).replace(/\D/g, '')}`}?text=${encodeURIComponent('Olá! Gostaria de conversar sobre as peças da Fio Sagrado.')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-whatsapp inline-flex items-center gap-2 text-xs"

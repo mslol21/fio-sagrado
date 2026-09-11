@@ -2,17 +2,17 @@ export const siteConfig = {
   name: "Fio Sagrado",
   shortName: "Fio Sagrado",
   subtitle: "Terços Artesanais em Crochê",
-  description: "Terços artesanais em crochê feitos à mão com delicadeza, fé e carinho. Conheça modelos especiais para oração, presente e momentos de devoção.",
+  description: "Terços artesanais em crochê feitos à mão com delicadeza, fé e carinho. Conheça modelos especiais para oração, presentes e momentos de devoção. De Maceió/AL para todo o Brasil.",
   slogan: "Terços feitos à mão, ponto por ponto, com fé e carinho.",
   url: "https://fiosagrado.vercel.app",
-  domain: "fiosagrado.vercel.app",
-  whatsapp: "5511999999999",
-  whatsappDisplay: "(11) 99999-9999",
-  instagram: "fiosagrado.tercos",
-  tiktok: "@fiosagrado.tercos",
+  domain: "fiosagrado.com.br",
+  whatsapp: "5582920006579",
+  whatsappDisplay: "(82) 92000-6579",
+  instagram: "fiosagrado.com.br",
+  tiktok: "@fiosagrado.com.br",
   email: "contato@fiosagrado.com.br",
-  address: "Ateliê no Brasil • Envio com carinho para todo o país",
-  niche: "Terços Artesanais em Crochê & Presentes de Fé",
+  address: "Ateliê em Maceió, AL • Enviamos com carinho para todo o Brasil",
+  niche: "Terços Artesanais em Crochê & Artigos Religiosos",
   concept: [
     "Fé e Oração",
     "Ponto por Ponto em Crochê",
@@ -29,8 +29,8 @@ export const siteConfig = {
     admin: "/admin",
   },
   social: {
-    whatsappUrl: "https://wa.me/5511999999999",
-    instagramUrl: "https://instagram.com/fiosagrado.tercos",
+    whatsappUrl: "https://wa.me/5582920006579",
+    instagramUrl: "https://instagram.com/fiosagrado.com.br/",
   }
 };
 

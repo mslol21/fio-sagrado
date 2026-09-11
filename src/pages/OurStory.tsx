@@ -84,7 +84,7 @@ const OurStory: React.FC = () => {
               <p className="text-[#786A61] text-sm mb-4">Deseja conhecer mais ou encomendar um terço personalizado?</p>
               {whatsappNum && (
                 <a
-                  href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent('Olá! Gostaria de conversar com o ateliê Fio Sagrado.')}`}
+                  href={`https://wa.me/${(whatsappNum || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (whatsappNum || siteConfig.whatsapp).replace(/\D/g, '') : `55${(whatsappNum || siteConfig.whatsapp).replace(/\D/g, '')}`}?text=${encodeURIComponent('Olá! Gostaria de conversar com o ateliê Fio Sagrado.')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-whatsapp inline-flex items-center gap-2"

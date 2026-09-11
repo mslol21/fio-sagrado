@@ -425,7 +425,7 @@ export const Home: React.FC = () => {
             </p>
             <div className="pt-2 flex flex-wrap gap-3 justify-center">
               <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Olá! Gostaria de tirar dúvidas sobre os terços em crochê da Fio Sagrado.')}`}
+                href={`https://wa.me/${(whatsappNumber || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (whatsappNumber || siteConfig.whatsapp).replace(/\D/g, '') : `55${(whatsappNumber || siteConfig.whatsapp).replace(/\D/g, '')}`}?text=${encodeURIComponent('Olá! Gostaria de tirar dúvidas sobre os terços em crochê da Fio Sagrado.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-whatsapp"
@@ -435,7 +435,7 @@ export const Home: React.FC = () => {
               </a>
               {instagramHandle && (
                 <a
-                  href={`https://instagram.com/${instagramHandle}`}
+                  href={`https://instagram.com/${instagramHandle.replace('@', '')}/`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-secondary flex items-center gap-2"

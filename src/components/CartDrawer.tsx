@@ -119,8 +119,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       console.error('Erro ao registrar pedido:', err);
     }
 
+    const rawNumber = (whatsappNum || siteConfig.whatsapp).replace(/\D/g, '');
+    const cleanPhone = rawNumber.startsWith('55') ? rawNumber : `55${rawNumber}`;
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
     
     setTimeout(() => {

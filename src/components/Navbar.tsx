@@ -233,10 +233,9 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
               <div className="p-5 border-t border-[#C7A57F]/20 space-y-3 bg-[#F5EEE5]/30">
                 {(settings.whatsapp || siteConfig.whatsapp) && (
                   <a
-                    href={`https://wa.me/${settings.whatsapp || siteConfig.whatsapp}`}
+                    href={`https://wa.me/${(settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '') : `55${(settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={handleNavClose}
                     className="flex items-center gap-3 p-3.5 bg-[#25D366]/10 text-[#25D366] rounded-2xl font-bold text-xs uppercase tracking-wider"
                   >
                     <WHATSAPP_ICON />
@@ -245,7 +244,7 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                 )}
                 {(settings.instagram || siteConfig.instagram) && (
                   <a
-                    href={`https://instagram.com/${settings.instagram || siteConfig.instagram}`}
+                    href={`https://instagram.com/${(settings.instagram || siteConfig.instagram).replace('@', '')}/`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={handleNavClose}
@@ -256,7 +255,7 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
                       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
                     </svg>
-                    <span>@{settings.instagram || siteConfig.instagram}</span>
+                    <span>@{(settings.instagram || siteConfig.instagram).replace('@', '')}</span>
                   </a>
                 )}
               </div>
