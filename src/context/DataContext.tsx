@@ -261,14 +261,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProducts(mappedProducts);
 
       // Fetch Settings
-      const { data: settingsData, error: sError } = await supabase
+      const { data: settingsData } = await supabase
         .from('settings')
         .select('*')
         .single();
 
-      if (sError && sError.code !== 'PGRST116') throw sError;
       if (settingsData) {
-        setSettings(settingsData);
+        const cleanName = (!settingsData.name || settingsData.name.includes('Entre Santos')) ? siteConfig.name : settingsData.name;
+        const cleanInstagram = (!settingsData.instagram || settingsData.instagram.toLowerCase().includes('entresantos')) ? siteConfig.instagram : settingsData.instagram;
+        const cleanDomain = (!settingsData.domain || settingsData.domain.toLowerCase().includes('entresantos')) ? siteConfig.domain : settingsData.domain;
+        const cleanWhatsapp = (!settingsData.whatsapp || settingsData.whatsapp === '5511999999999' || !settingsData.whatsapp.trim()) ? siteConfig.whatsapp : settingsData.whatsapp;
+        const cleanSlogan = !settingsData.slogan ? siteConfig.slogan : settingsData.slogan;
+
+        setSettings({
+          ...settingsData,
+          name: cleanName,
+          instagram: cleanInstagram,
+          domain: cleanDomain,
+          whatsapp: cleanWhatsapp,
+          slogan: cleanSlogan,
+        });
       }
     } catch (error) {
       console.error('Error fetching data:', error);

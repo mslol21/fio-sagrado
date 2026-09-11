@@ -1,5 +1,5 @@
 -- ============================================================
--- SCHEMA V3 — ATELIÊ ENTRE SANTOS
+-- SCHEMA V3 — FIO SAGRADO
 -- CONSTRUTOR VISUAL DE TERÇOS PERSONALIZADOS
 -- Execute este arquivo no Supabase SQL Editor
 -- ============================================================

@@ -1,4 +1,4 @@
--- Script SQL de criação de tabelas para o Ateliê Entre Santos no Supabase
+-- Script SQL de criação de tabelas para a Fio Sagrado no Supabase
 
 -- 1. Tabela de Produtos
 CREATE TABLE IF NOT EXISTS public.products (
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
 
 -- Inserir configuração padrão caso não exista
 INSERT INTO public.settings (id, name, whatsapp, niche, instagram, tiktok, slogan)
-VALUES (1, 'Ateliê Entre Santos', '', '', '', '', '')
+VALUES (1, 'Fio Sagrado', '5582920006579', 'Terços Artesanais em Crochê & Artigos Religiosos', 'fiosagrado.com.br', '@fiosagrado.com.br', 'Terços feitos à mão, ponto por ponto, com fé e carinho.')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Tabela de Categorias

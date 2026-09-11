@@ -1,5 +1,5 @@
 -- ============================================================
--- SCHEMA V2 — ATELIÊ ENTRE SANTOS
+-- SCHEMA V2 — FIO SAGRADO
 -- Execute este arquivo no Supabase SQL Editor
 -- Data: Agosto 2026
 -- 
@@ -12,7 +12,7 @@
 -- PARTE 1: NOVAS TABELAS
 -- ============================================================
 
--- 1. Tabela de Coleções Entre Santos
+-- 1. Tabela de Coleções Fio Sagrado
 CREATE TABLE IF NOT EXISTS public.collections (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
@@ -115,7 +115,7 @@ ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS address TEXT;
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS about_text TEXT;
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS about_image TEXT;
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS og_image TEXT;
-ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS domain TEXT DEFAULT 'atelieentresantos.vercel.app';
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS domain TEXT DEFAULT 'fiosagrado.com.br';
 ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS whatsapp_message TEXT;
 -- Mensagem padrão para WhatsApp de personalização
 
