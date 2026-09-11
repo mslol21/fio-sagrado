@@ -33,13 +33,13 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-[#4D4038] text-[#F5EEE5] border-b border-[#9A7655]/20 shadow-md transition-all duration-300">
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-[#FCFAF7]/95 backdrop-blur-md text-[#4D4038] border-b border-[#C7A57F]/25 shadow-xs transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 h-[4.75rem] md:h-[5.25rem] flex items-center justify-between gap-4">
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-[#F5EEE5] hover:text-[#CA9F53] transition-colors cursor-pointer"
+            className="md:hidden p-2 text-[#5E5047] hover:text-[#9A7655] hover:bg-[#F5EEE5] rounded-xl transition-colors cursor-pointer"
             aria-label="Menu"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -47,7 +47,7 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
 
           {/* Logo */}
           <Link to="/" onClick={handleNavClose} className="flex items-center gap-3.5 flex-shrink-0 group py-1">
-            <div className="bg-[#FCFAF7] p-2 md:p-2.5 rounded-2xl border border-[#C7A57F]/30 shadow-md flex items-center justify-center">
+            <div className="bg-white/90 p-1.5 md:p-2 rounded-2xl border border-[#C7A57F]/25 shadow-xs flex items-center justify-center">
               <img 
                 src="/logo.png" 
                 onError={(e) => {
@@ -71,7 +71,7 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
             {/* Loja dropdown */}
             <div className="relative" onMouseEnter={() => setIsLojaOpen(true)} onMouseLeave={() => setIsLojaOpen(false)}>
               <Link to="/loja" className={`nav-link flex items-center gap-1 ${location.pathname.startsWith('/loja') ? 'nav-link-active' : ''}`}>
-                Loja <ChevronDown size={13} className={`transition-transform text-[#CA9F53] ${isLojaOpen ? 'rotate-180' : ''}`} />
+                Loja <ChevronDown size={13} className={`transition-transform text-[#9A7655] ${isLojaOpen ? 'rotate-180' : ''}`} />
               </Link>
               <AnimatePresence>
                 {isLojaOpen && (
@@ -80,11 +80,11 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full left-0 mt-1 w-64 bg-[#4D4038] border border-[#9A7655]/30 rounded-2xl shadow-2xl py-2.5 z-50 text-[#F5EEE5]"
+                    className="absolute top-full left-0 mt-1 w-64 bg-white/95 backdrop-blur-md border border-[#C7A57F]/25 rounded-2xl shadow-xl py-2.5 z-50 text-[#4D4038]"
                   >
                     {lojaLinks.map(l => (
                       <Link key={l.label} to={l.to} onClick={handleNavClose}
-                        className="block px-4 py-2.5 text-xs font-semibold text-[#F5EEE5]/80 hover:text-[#CA9F53] hover:bg-white/10 transition-colors uppercase tracking-wider">
+                        className="block px-4 py-2.5 text-xs font-semibold text-[#5E5047] hover:text-[#9A7655] hover:bg-[#F5EEE5] transition-colors uppercase tracking-wider">
                         {l.label}
                       </Link>
                     ))}
@@ -96,13 +96,13 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
             {/* Monte seu Terço / Pulseira — Featured Nav Button */}
             <Link
               to="/monte-seu-terco"
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-xs ${
                 location.pathname === '/monte-seu-terco' || location.pathname === '/monte-sua-pulseira'
-                  ? 'bg-[#CA9F53] text-[#4D4038] shadow-md font-black'
-                  : 'bg-[#9A7655] text-white hover:bg-[#CA9F53] hover:text-[#4D4038]'
+                  ? 'bg-[#836243] text-white shadow-md ring-2 ring-[#CA9F53]/40'
+                  : 'bg-[#9A7655] text-white hover:bg-[#836243] hover:shadow-md'
               }`}
             >
-              <Sparkles size={13} className={location.pathname === '/monte-seu-terco' ? 'text-[#4D4038]' : 'text-[#F5EEE5]'} />
+              <Sparkles size={13} className="text-[#F5EEE5]" />
               <span>Monte seu Terço / Pulseira</span>
             </Link>
 
@@ -119,23 +119,23 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                 href={`https://wa.me/${(settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '') : `55${(settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-2 px-3.5 py-2 text-[#25D366] hover:bg-white/10 rounded-full transition-all text-xs font-bold uppercase tracking-wider border border-[#25D366]/30"
+                className="hidden sm:flex items-center gap-2 px-3.5 py-2 text-[#1e8346] bg-[#25D366]/10 hover:bg-[#25D366]/20 rounded-full transition-all text-xs font-bold uppercase tracking-wider border border-[#25D366]/30"
                 aria-label="WhatsApp"
               >
                 <WHATSAPP_ICON />
-                <span className="hidden lg:inline text-[#F5EEE5]">Falar conosco</span>
+                <span className="hidden lg:inline text-[#4D4038]">Falar conosco</span>
               </a>
             )}
 
             {/* Cart */}
             <button
               onClick={onCartClick}
-              className="relative p-2.5 text-[#F5EEE5] hover:text-[#CA9F53] hover:bg-white/10 rounded-full transition-all active:scale-90 group cursor-pointer"
+              className="relative p-2.5 text-[#5E5047] hover:text-[#9A7655] hover:bg-[#F5EEE5] rounded-full transition-all active:scale-90 group cursor-pointer"
               aria-label="Carrinho"
             >
               <ShoppingCart size={22} className="group-hover:rotate-6 transition-transform" />
               {totalItems > 0 && (
-                <span className="absolute top-0.5 right-0.5 bg-[#CA9F53] text-[#4D4038] text-[10px] font-black flex items-center justify-center rounded-full border border-[#4D4038] min-w-[18px] min-h-[18px] px-1 shadow-xs">
+                <span className="absolute top-0.5 right-0.5 bg-[#9A7655] text-white text-[10px] font-black flex items-center justify-center rounded-full border border-white min-w-[18px] min-h-[18px] px-1 shadow-xs">
                   {totalItems}
                 </span>
               )}
@@ -153,19 +153,19 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleNavClose}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[45] md:hidden"
+              className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[45] md:hidden"
             />
             <motion.div
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-              className="fixed left-0 top-0 bottom-0 w-[84%] max-w-[320px] bg-[#4D4038] text-[#F5EEE5] z-[50] md:hidden flex flex-col overflow-y-auto border-r border-[#9A7655]/25 shadow-2xl"
+              className="fixed left-0 top-0 bottom-0 w-[84%] max-w-[320px] bg-[#FCFAF7] text-[#4D4038] z-[50] md:hidden flex flex-col overflow-y-auto border-r border-[#C7A57F]/25 shadow-2xl"
             >
               {/* Mobile Header */}
-              <div className="flex items-center justify-between p-5 border-b border-[#9A7655]/20 bg-[#3D332C]">
+              <div className="flex items-center justify-between p-5 border-b border-[#C7A57F]/20 bg-[#F5EEE5]/80">
                 <Link to="/" onClick={handleNavClose} className="flex items-center gap-3">
-                  <div className="bg-[#FCFAF7] p-2 rounded-2xl border border-[#C7A57F]/30 shadow-md">
+                  <div className="bg-white p-1.5 rounded-2xl border border-[#C7A57F]/25 shadow-xs">
                     <img
                       src="/logo.png"
                       onError={(e) => {
@@ -179,7 +179,7 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                     />
                   </div>
                 </Link>
-                <button onClick={handleNavClose} className="p-2 text-[#F5EEE5]/70 hover:text-white rounded-full hover:bg-white/10 cursor-pointer">
+                <button onClick={handleNavClose} className="p-2 text-[#786A61] hover:text-[#4D4038] rounded-full hover:bg-[#EAE1D5] cursor-pointer">
                   <X size={20} />
                 </button>
               </div>
@@ -201,13 +201,13 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                 <Link
                   to="/monte-sua-pulseira"
                   onClick={handleNavClose}
-                  className="flex items-center justify-between p-3.5 bg-white/10 text-[#F5EEE5] border border-[#9A7655]/30 rounded-2xl font-bold text-xs uppercase tracking-wider hover:bg-white/15"
+                  className="flex items-center justify-between p-3.5 bg-[#F5EEE5] text-[#5E5047] border border-[#C7A57F]/30 rounded-2xl font-bold text-xs uppercase tracking-wider hover:bg-[#EAE1D5]"
                 >
                   <div className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-[#CA9F53]" />
+                    <Sparkles size={16} className="text-[#9A7655]" />
                     <span>Monte sua Pulseira</span>
                   </div>
-                  <span className="text-[10px] bg-[#CA9F53] text-[#4D4038] px-2 py-0.5 rounded-full font-bold">Novo</span>
+                  <span className="text-[10px] bg-[#9A7655] text-white px-2 py-0.5 rounded-full font-bold">Novo</span>
                 </Link>
               </div>
 
@@ -224,8 +224,8 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                     onClick={handleNavClose}
                     className={`flex items-center p-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all ${
                       location.pathname === item.to
-                        ? 'bg-white/15 text-[#CA9F53] font-black border border-[#9A7655]/30'
-                        : 'text-[#F5EEE5]/80 hover:text-[#CA9F53] hover:bg-white/10'
+                        ? 'bg-[#F5EEE5] text-[#9A7655] font-black border border-[#C7A57F]/30'
+                        : 'text-[#5E5047] hover:text-[#9A7655] hover:bg-[#F5EEE5]'
                     }`}
                   >
                     {item.label}
@@ -234,16 +234,16 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
               </nav>
 
               {/* Mobile Footer */}
-              <div className="p-5 border-t border-[#9A7655]/20 space-y-3 bg-[#3D332C]">
+              <div className="p-5 border-t border-[#C7A57F]/20 space-y-3 bg-[#F5EEE5]/60">
                 {(settings.whatsapp || siteConfig.whatsapp) && (
                   <a
                     href={`https://wa.me/${(settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '').startsWith('55') ? (settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '') : `55${(settings.whatsapp || siteConfig.whatsapp).replace(/\D/g, '')}`}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3.5 bg-[#25D366]/20 text-[#25D366] rounded-2xl font-bold text-xs uppercase tracking-wider border border-[#25D366]/30"
+                    className="flex items-center gap-3 p-3.5 bg-[#25D366]/15 text-[#1e8346] rounded-2xl font-bold text-xs uppercase tracking-wider border border-[#25D366]/30"
                   >
                     <WHATSAPP_ICON />
-                    <span className="text-[#F5EEE5]">Falar pelo WhatsApp</span>
+                    <span className="text-[#4D4038]">Falar pelo WhatsApp</span>
                   </a>
                 )}
                 {(settings.instagram || siteConfig.instagram) && (
@@ -252,7 +252,7 @@ export const Navbar: React.FC<{ onCartClick: () => void }> = ({ onCartClick }) =
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={handleNavClose}
-                    className="flex items-center gap-3 p-3.5 text-[#F5EEE5]/80 hover:text-[#CA9F53] rounded-2xl hover:bg-white/10 transition-all font-semibold text-xs"
+                    className="flex items-center gap-3 p-3.5 text-[#5E5047] hover:text-[#9A7655] rounded-2xl hover:bg-[#F5EEE5] transition-all font-semibold text-xs"
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
