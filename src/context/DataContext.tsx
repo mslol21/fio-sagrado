@@ -193,20 +193,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     fetchData();
 
-    const channel = supabase
-      .channel('db-realtime-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'collections' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'saints' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'quotes' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rosary_models' }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'customization_components' }, () => fetchData())
-      .subscribe();
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel('db-realtime-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'collections' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'saints' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'quotes' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'rosary_models' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'customization_components' }, () => fetchData())
+        .subscribe();
+    } catch (err) {
+      console.warn('Realtime subscription not active:', err);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (_) {}
+      }
     };
   }, []);
 
