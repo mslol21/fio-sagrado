@@ -4,7 +4,7 @@ import {
   Heart, Share2, Download, ShoppingBag, MessageCircle, Clock, 
   Minus, Plus, ArrowLeft, Settings2, Check, ChevronLeft, ChevronRight, Sparkles
 } from 'lucide-react';
-import { motion, useMotionValue, animate } from 'framer-motion';
+import { motion, useMotionValue, animate, type PanInfo } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { siteConfig } from '../config/site';
@@ -38,7 +38,15 @@ export const ProductDetails: React.FC = () => {
   const [selectedVariation, setSelectedVariation] = useState<Variation | GlobalOption | null>(null);
   const [customOptions, setCustomOptions] = useState<Record<string, string>>({});
   const [isAdded, setIsAdded] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(() => {
+    if (!id) return false;
+    try {
+      const favorites = JSON.parse(localStorage.getItem('fs_favorites') || localStorage.getItem('es_favorites') || '[]');
+      return favorites.includes(id);
+    } catch {
+      return false;
+    }
+  });
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const product = products.find(p => p.id === id);
@@ -46,8 +54,6 @@ export const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     if (id) {
-      const favorites = JSON.parse(localStorage.getItem('fs_favorites') || localStorage.getItem('es_favorites') || '[]');
-      setIsFavorite(favorites.includes(id));
       window.scrollTo(0, 0);
     }
   }, [id]);
@@ -84,18 +90,55 @@ export const ProductDetails: React.FC = () => {
     }
   }, [product]);
 
+  const productDescription = product?.description || '';
+
+  // Estratégia de limpeza e remoção de espaços/linhas vazias excessivas na descrição
+  const descriptionParagraphs = useMemo(() => {
+    if (!productDescription) return [];
+    
+    // 1. Unificar quebras de linha e limpar espaços em branco repetidos
+    const rawLines = productDescription
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .split('\n')
+      .map(line => line.trim());
+
+    // 2. Colapsar múltiplas linhas vazias consecutivas (máximo 1 linha vazia de separador)
+    const collapsedLines: string[] = [];
+    for (const line of rawLines) {
+      if (line === '') {
+        if (collapsedLines.length > 0 && collapsedLines[collapsedLines.length - 1] !== '') {
+          collapsedLines.push('');
+        }
+      } else {
+        collapsedLines.push(line);
+      }
+    }
+
+    // 3. Agrupar em blocos de parágrafos consistentes
+    const rawBlocks = collapsedLines.join('\n').split(/\n\s*\n/);
+
+    return rawBlocks
+      .map(block => block.trim())
+      .filter(Boolean);
+  }, [productDescription]);
+
   const toggleFavorite = () => {
     if (!id) return;
-    const favorites = JSON.parse(localStorage.getItem('fs_favorites') || localStorage.getItem('es_favorites') || '[]');
-    let updated;
-    if (favorites.includes(id)) {
-      updated = favorites.filter((fid: string) => fid !== id);
-      setIsFavorite(false);
-    } else {
-      updated = [...favorites, id];
-      setIsFavorite(true);
+    try {
+      const favorites = JSON.parse(localStorage.getItem('fs_favorites') || localStorage.getItem('es_favorites') || '[]');
+      let updated: string[];
+      if (favorites.includes(id)) {
+        updated = favorites.filter((fid: string) => fid !== id);
+        setIsFavorite(false);
+      } else {
+        updated = [...favorites, id];
+        setIsFavorite(true);
+      }
+      localStorage.setItem('fs_favorites', JSON.stringify(updated));
+    } catch {
+      // ignore
     }
-    localStorage.setItem('fs_favorites', JSON.stringify(updated));
   };
 
   if (loading) {
@@ -133,14 +176,14 @@ export const ProductDetails: React.FC = () => {
   const needsCustomizer = isCustomizable || hasVariations || relevantColors.length > 0 || relevantAssembly.length > 0;
 
   const getBasePrice = () => {
-    if (selectedVariation && !('type' in (selectedVariation as any))) return (selectedVariation as any).price || 0;
+    if (selectedVariation && !('type' in selectedVariation)) return selectedVariation.price || 0;
     return product.price;
   };
 
   const getAddonsPrice = () => {
     let total = 0;
-    if (selectedVariation && 'type' in (selectedVariation as any)) {
-      total += (selectedVariation as any).price || 0;
+    if (selectedVariation && 'type' in selectedVariation) {
+      total += selectedVariation.price || 0;
     }
     relevantAssembly.forEach(opt => {
       if (customOptions[`${opt.group}_id`] === opt.id) {
@@ -155,37 +198,6 @@ export const ProductDetails: React.FC = () => {
 
   const displayPrice = getBasePrice() + getAddonsPrice();
   const displayImage = selectedVariation ? selectedVariation.image : (productImages[selectedImageIndex] || product?.image || '');
-
-  // Estratégia de limpeza e remoção de espaços/linhas vazias excessivas na descrição
-  const descriptionParagraphs = useMemo(() => {
-    if (!product.description) return [];
-    
-    // 1. Unificar quebras de linha e limpar espaços em branco repetidos
-    const rawLines = product.description
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .split('\n')
-      .map(line => line.trim());
-
-    // 2. Colapsar múltiplas linhas vazias consecutivas (máximo 1 linha vazia de separador)
-    const collapsedLines: string[] = [];
-    for (const line of rawLines) {
-      if (line === '') {
-        if (collapsedLines.length > 0 && collapsedLines[collapsedLines.length - 1] !== '') {
-          collapsedLines.push('');
-        }
-      } else {
-        collapsedLines.push(line);
-      }
-    }
-
-    // 3. Agrupar em blocos de parágrafos consistentes
-    const rawBlocks = collapsedLines.join('\n').split(/\n\s*\n/);
-
-    return rawBlocks
-      .map(block => block.trim())
-      .filter(Boolean);
-  }, [product.description]);
 
   const handleAddToCart = () => {
     let customName = product.name;
@@ -755,7 +767,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({ currentProductId, pro
     animate(x, -(clamped * CARD_STEP), { type: 'spring', stiffness: 300, damping: 35 });
   };
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setDragging(false);
     const threshold = CARD_STEP / 3;
     if (info.offset.x < -threshold) goTo(index + 1);

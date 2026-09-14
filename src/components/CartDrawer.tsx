@@ -59,7 +59,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           `Crucifixo: ${s.crucifix?.name || 'Barroco'}`,
         ];
         if (s.extras && Array.isArray(s.extras) && s.extras.length > 0) {
-          parts.push(`Extras: ${s.extras.map((e: any) => e.name).join(', ')}`);
+          parts.push(`Extras: ${s.extras.map(e => e.name).join(', ')}`);
         }
         if (s.customName) {
           parts.push(`Nome Personalizado: ${s.customName}`);

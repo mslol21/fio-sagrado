@@ -122,8 +122,9 @@ export const CustomizerAdmin: React.FC = () => {
         showToast('Novo modelo de terço cadastrado!', 'success');
       }
       setIsModelModalOpen(false);
-    } catch (err: any) {
-      showToast('Erro ao salvar modelo: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+      showToast('Erro ao salvar modelo: ' + msg, 'error');
     }
   };
 
@@ -132,7 +133,7 @@ export const CustomizerAdmin: React.FC = () => {
     try {
       await deleteRosaryModel(id);
       showToast('Modelo removido.', 'info');
-    } catch (err: any) {
+    } catch {
       showToast('Erro ao remover modelo.', 'error');
     }
   };
@@ -196,8 +197,9 @@ export const CustomizerAdmin: React.FC = () => {
         showToast('Novo componente cadastrado!', 'success');
       }
       setIsCompModalOpen(false);
-    } catch (err: any) {
-      showToast('Erro ao salvar componente: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+      showToast('Erro ao salvar componente: ' + msg, 'error');
     }
   };
 
@@ -206,7 +208,7 @@ export const CustomizerAdmin: React.FC = () => {
     try {
       await deleteCustomizationComponent(id);
       showToast('Componente removido.', 'info');
-    } catch (err: any) {
+    } catch {
       showToast('Erro ao remover componente.', 'error');
     }
   };
@@ -223,8 +225,9 @@ export const CustomizerAdmin: React.FC = () => {
         setFormComp(prev => ({ ...prev, image: url }));
       }
       showToast('Imagem carregada com sucesso!', 'success');
-    } catch (err: any) {
-      showToast('Erro no upload: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro no envio da imagem';
+      showToast('Erro no upload: ' + msg, 'error');
     } finally {
       setIsUploading(false);
     }

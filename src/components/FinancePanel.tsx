@@ -62,8 +62,14 @@ export const FinancePanel: React.FC = () => {
   }, [transactions]);
 
   const chartData = useMemo(() => {
+    interface MonthlyFinancialData {
+      name: string;
+      receitas: number;
+      despesas: number;
+    }
+
     // Group transactions by month-year
-    const grouped = transactions.reduce((acc: any, t) => {
+    const grouped = transactions.reduce<Record<string, MonthlyFinancialData>>((acc, t) => {
       const date = new Date(t.date);
       // Ensure month is 2 digits
       const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -77,7 +83,7 @@ export const FinancePanel: React.FC = () => {
     }, {});
 
     // Convert to array and sort chronologically
-    return Object.values(grouped).sort((a: any, b: any) => a.name.localeCompare(b.name)).slice(-6); // Last 6 months
+    return Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name)).slice(-6); // Last 6 months
   }, [transactions]);
 
   return (

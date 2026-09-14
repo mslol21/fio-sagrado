@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
 import { useCart } from '../../context/CartContext';
@@ -40,18 +40,55 @@ export const RosaryBuilder: React.FC = () => {
   const [maxReachedStep, setMaxReachedStep] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  // Configuration State
-  const [selectedModel, setSelectedModel] = useState<RosaryModel | undefined>(undefined);
-  const [selectedBead, setSelectedBead] = useState<CustomizationComponent | undefined>(undefined);
+  // Sync mode with URL param if it changes externally during render
+  const typeParam = searchParams.get('tipo');
+  const expectedMode = (typeParam === 'pulseira' || location.pathname.includes('pulseira')) ? 'pulseira' : 'terco';
+  if (typeParam && (typeParam === 'pulseira' || typeParam === 'terco') && builderMode !== expectedMode) {
+    setBuilderMode(expectedMode);
+  }
+
+  // Model selection
+  const matchingModel = useMemo(() => {
+    const modelParam = searchParams.get('modelo') || searchParams.get('produto');
+    if (modelParam && rosaryModels.length > 0) {
+      const found = rosaryModels.find(m => 
+        m.slug.toLowerCase() === modelParam.toLowerCase() ||
+        m.name.toLowerCase().includes(modelParam.toLowerCase())
+      );
+      if (found) return found;
+    }
+    return rosaryModels.find(m => {
+      if (m.is_active === false) return false;
+      const isP = m.product_type === 'bracelet' || m.slug.includes('pulseira');
+      return builderMode === 'pulseira' ? isP : !isP;
+    });
+  }, [rosaryModels, searchParams, builderMode]);
+
+  const [selectedModelOverride, setSelectedModel] = useState<RosaryModel | undefined>(undefined);
+  const selectedModel = selectedModelOverride && (
+    (builderMode === 'pulseira' && (selectedModelOverride.product_type === 'bracelet' || selectedModelOverride.slug.includes('pulseira'))) ||
+    (builderMode === 'terco' && selectedModelOverride.product_type !== 'bracelet' && !selectedModelOverride.slug.includes('pulseira'))
+  ) ? selectedModelOverride : matchingModel;
+
+  const defaultBead = useMemo(() => customizationComponents.find(c => c.component_type === 'bead' && c.is_active), [customizationComponents]);
+  const defaultCenterpiece = useMemo(() => customizationComponents.find(c => c.component_type === 'centerpiece' && c.is_active), [customizationComponents]);
+  const defaultCrucifix = useMemo(() => customizationComponents.find(c => c.component_type === 'crucifix' && c.is_active), [customizationComponents]);
+
+  const [selectedBeadOverride, setSelectedBead] = useState<CustomizationComponent | undefined>(undefined);
   const [selectedOurFather, setSelectedOurFather] = useState<CustomizationComponent | undefined>(undefined);
-  const [selectedCenterpiece, setSelectedCenterpiece] = useState<CustomizationComponent | undefined>(undefined);
-  const [selectedCrucifix, setSelectedCrucifix] = useState<CustomizationComponent | undefined>(undefined);
-  const selectedExtras: CustomizationComponent[] = [];
+  const [selectedCenterpieceOverride, setSelectedCenterpiece] = useState<CustomizationComponent | undefined>(undefined);
+  const [selectedCrucifixOverride] = useState<CustomizationComponent | undefined>(undefined);
+
+  const selectedBead = selectedBeadOverride || defaultBead;
+  const selectedCenterpiece = selectedCenterpieceOverride || defaultCenterpiece;
+  const selectedCrucifix = selectedCrucifixOverride || defaultCrucifix;
+
+  const [selectedExtras] = useState<CustomizationComponent[]>([]);
   const customName = '';
   const customMessage = '';
   const notes = '';
   const [publicCode, setPublicCode] = useState(() => 
-    `${builderMode === 'pulseira' ? 'FS-PUL' : 'FS-TER'}-${Math.floor(10000 + Math.random() * 90000)}`
+    `${initialMode === 'pulseira' ? 'FS-PUL' : 'FS-TER'}-${Math.floor(10000 + Math.random() * 90000)}`
   );
 
   // Handle switching between Terço and Pulseira
@@ -62,79 +99,8 @@ export const RosaryBuilder: React.FC = () => {
     setMaxReachedStep(1);
     setSearchParams({ tipo: newMode });
     setPublicCode(`${newMode === 'pulseira' ? 'FS-PUL' : 'FS-TER'}-${Math.floor(10000 + Math.random() * 90000)}`);
-    
-    // Pick the first active model of the selected mode
-    const matchingModel = rosaryModels.find(m => {
-      if (m.is_active === false) return false;
-      const isP = m.product_type === 'bracelet' || m.slug.includes('pulseira');
-      return newMode === 'pulseira' ? isP : !isP;
-    });
-    if (matchingModel) {
-      setSelectedModel(matchingModel);
-    }
+    setSelectedModel(undefined);
   };
-
-  // Sync mode with URL param if it changes externally
-  useEffect(() => {
-    const typeParam = searchParams.get('tipo');
-    if (typeParam === 'pulseira' && builderMode !== 'pulseira') {
-      setBuilderMode('pulseira');
-      setPublicCode(`FS-PUL-${Math.floor(10000 + Math.random() * 90000)}`);
-    } else if (typeParam === 'terco' && builderMode !== 'terco') {
-      setBuilderMode('terco');
-      setPublicCode(`FS-TER-${Math.floor(10000 + Math.random() * 90000)}`);
-    }
-  }, [searchParams, builderMode]);
-
-  // Default selections on load
-  useEffect(() => {
-    if (rosaryModels.length > 0) {
-      const modelParam = searchParams.get('modelo') || searchParams.get('produto');
-      if (modelParam) {
-        const found = rosaryModels.find(m => 
-          m.slug.toLowerCase() === modelParam.toLowerCase() ||
-          m.name.toLowerCase().includes(modelParam.toLowerCase())
-        );
-        if (found) {
-          setSelectedModel(found);
-          const isPulseiraModel = found.product_type === 'bracelet' || found.slug.includes('pulseira');
-          setBuilderMode(isPulseiraModel ? 'pulseira' : 'terco');
-          return;
-        }
-      }
-
-      // Default to the first model matching the current mode
-      if (!selectedModel || (builderMode === 'pulseira' && selectedModel.product_type !== 'bracelet' && !selectedModel.slug.includes('pulseira')) || (builderMode === 'terco' && (selectedModel.product_type === 'bracelet' || selectedModel.slug.includes('pulseira')))) {
-        const matching = rosaryModels.find(m => {
-          if (m.is_active === false) return false;
-          const isP = m.product_type === 'bracelet' || m.slug.includes('pulseira');
-          return builderMode === 'pulseira' ? isP : !isP;
-        });
-        if (matching) setSelectedModel(matching);
-      }
-    }
-  }, [rosaryModels, builderMode, searchParams]);
-
-  useEffect(() => {
-    if (!selectedBead && customizationComponents.length > 0) {
-      const defaultBead = customizationComponents.find(c => c.component_type === 'bead' && c.is_active);
-      if (defaultBead) setSelectedBead(defaultBead);
-    }
-  }, [customizationComponents, selectedBead]);
-
-  useEffect(() => {
-    if (!selectedCenterpiece && customizationComponents.length > 0) {
-      const defaultCp = customizationComponents.find(c => c.component_type === 'centerpiece' && c.is_active);
-      if (defaultCp) setSelectedCenterpiece(defaultCp);
-    }
-  }, [customizationComponents, selectedCenterpiece]);
-
-  useEffect(() => {
-    if (!selectedCrucifix && customizationComponents.length > 0) {
-      const defaultCr = customizationComponents.find(c => c.component_type === 'crucifix' && c.is_active);
-      if (defaultCr) setSelectedCrucifix(defaultCr);
-    }
-  }, [customizationComponents, selectedCrucifix]);
 
   // Price calculations
   const basePrice = selectedModel?.base_price ?? (builderMode === 'pulseira' ? 39.90 : 59.90);
@@ -239,7 +205,6 @@ export const RosaryBuilder: React.FC = () => {
           buildId: saved.id,
           code: finalCode,
           model: selectedModel?.name || (builderMode === 'pulseira' ? 'Pulseira Regulável' : 'Tradicional'),
-          builderMode,
           selections: {
             model: selectedModel,
             bead: selectedBead,
@@ -252,7 +217,7 @@ export const RosaryBuilder: React.FC = () => {
             notes: notes || undefined
           }
         }
-      } as any, 1);
+      }, 1);
 
       showToast(
         builderMode === 'pulseira'
@@ -261,7 +226,7 @@ export const RosaryBuilder: React.FC = () => {
         'success'
       );
       setIsCartOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao adicionar ao carrinho:', err);
       showToast('Erro ao salvar sua criação. Tente novamente.', 'error');
     } finally {

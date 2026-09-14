@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { 
   Product, Category, GlobalOption, ShopSettings, Transaction, Order,
-  Collection, Saint, Quote, RosaryModel, CustomizationComponent, CustomBuild
+  Collection, Saint, Quote, RosaryModel, CustomizationComponent, CustomBuild,
+  ProductionStatus
 } from '../types';
 import { supabase } from '../lib/supabase';
 import { 
@@ -190,36 +192,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-
-    let channel: any = null;
-    try {
-      channel = supabase
-        .channel('db-realtime-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'collections' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'saints' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'quotes' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'rosary_models' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'customization_components' }, () => fetchData())
-        .subscribe();
-    } catch (err) {
-      console.warn('Realtime subscription not active:', err);
-    }
-
-    return () => {
-      if (channel) {
-        try {
-          supabase.removeChannel(channel);
-        } catch (_) {}
-      }
-    };
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -399,16 +372,60 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let isSubscribed = true;
+
+    const loadInitialData = async () => {
+      try {
+        await fetchData();
+      } catch (err) {
+        console.error('Initial data fetch failed:', err);
+      }
+    };
+
+    if (isSubscribed) {
+      void loadInitialData();
+    }
+
+    let channel: RealtimeChannel | null = null;
+    try {
+      channel = supabase
+        .channel('db-realtime-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'collections' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'saints' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'quotes' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'rosary_models' }, () => { void fetchData(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'customization_components' }, () => { void fetchData(); })
+        .subscribe();
+    } catch (err) {
+      console.warn('Realtime subscription not active:', err);
+    }
+
+    return () => {
+      isSubscribed = false;
+      if (channel) {
+        try {
+          void supabase.removeChannel(channel);
+        } catch {
+          // Channel removal error ignored
+        }
+      }
+    };
+  }, [fetchData]);
 
   // ==================== PRODUCTS ====================
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
-    const isCustomizable = !!(product.isCustomizable !== undefined ? product.isCustomizable : (product as any).is_customizable);
-    const hasNameOption = isCustomizable ? !!(product.hasNameOption !== undefined ? product.hasNameOption : (product as any).has_name_option) : false;
-    const isActive = product.isActive !== undefined ? product.isActive : (product as any).is_active;
-    const hasColorOption = isCustomizable ? !!(product.hasColorOption !== undefined ? product.hasColorOption : ((product as any).available_colors?.includes('[HAS_COLOR_OPTION]') || false)) : false;
-    const availableColors = isCustomizable ? (product.availableColors !== undefined ? product.availableColors : ((product as any).available_colors?.replace('[HAS_COLOR_OPTION]', '').trim() || '')) : '';
+    const isCustomizable = !!product.isCustomizable;
+    const hasNameOption = isCustomizable ? !!product.hasNameOption : false;
+    const isActive = product.isActive !== undefined ? product.isActive : true;
+    const hasColorOption = isCustomizable ? !!product.hasColorOption : false;
+    const availableColors = isCustomizable ? (product.availableColors || '') : '';
 
     const imagesList = product.images && product.images.length > 0 ? product.images.slice(0, 5) : (product.image ? [product.image] : []);
     const mainImage = imagesList[0] || product.image || '';
@@ -450,18 +467,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       display_order: product.display_order || 0,
     };
 
-    let { error } = await supabase.from('products').insert([fullPayload]).select();
+    const { error } = await supabase.from('products').insert([fullPayload]).select();
 
     if (error) throw error;
     fetchData();
   };
 
   const updateProduct = async (product: Product) => {
-    const isCustomizable = !!(product.isCustomizable !== undefined ? product.isCustomizable : (product as any).is_customizable);
-    const hasNameOption = isCustomizable ? !!(product.hasNameOption !== undefined ? product.hasNameOption : (product as any).has_name_option) : false;
-    const isActive = product.isActive !== undefined ? product.isActive : (product as any).is_active;
-    const hasColorOption = isCustomizable ? !!(product.hasColorOption !== undefined ? product.hasColorOption : ((product as any).available_colors?.includes('[HAS_COLOR_OPTION]') || false)) : false;
-    const availableColors = isCustomizable ? (product.availableColors !== undefined ? product.availableColors : ((product as any).available_colors?.replace('[HAS_COLOR_OPTION]', '').trim() || '')) : '';
+    const isCustomizable = !!product.isCustomizable;
+    const hasNameOption = isCustomizable ? !!product.hasNameOption : false;
+    const isActive = product.isActive !== undefined ? product.isActive : true;
+    const hasColorOption = isCustomizable ? !!product.hasColorOption : false;
+    const availableColors = isCustomizable ? (product.availableColors || '') : '';
 
     const imagesList = product.images && product.images.length > 0 ? product.images.slice(0, 5) : (product.image ? [product.image] : []);
     const mainImage = imagesList[0] || product.image || '';
@@ -659,7 +676,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateOrderProductionStatus = async (id: string, productionStatus: string) => {
     const { error } = await supabase.from('orders').update({ production_status: productionStatus }).eq('id', id);
     if (error) throw error;
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, production_status: productionStatus as any } : o));
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, production_status: productionStatus as ProductionStatus } : o));
   };
 
   const deleteOrder = async (id: string) => {

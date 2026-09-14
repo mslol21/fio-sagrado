@@ -11,7 +11,7 @@ export interface StepItem {
   iconComponent: React.ReactNode;
 }
 
-export const getSteps = (builderMode: 'terco' | 'pulseira' = 'terco'): StepItem[] => [
+const getSteps = (builderMode: 'terco' | 'pulseira' = 'terco'): StepItem[] => [
   { id: 1, label: builderMode === 'pulseira' ? 'Modelo da Pulseira' : 'Modelo', shortLabel: 'Modelo', iconComponent: <Layers size={13} /> },
   { id: 2, label: builderMode === 'pulseira' ? 'Contas da Dezena (10x)' : 'Contas (Ave-Marias)', shortLabel: 'Contas', iconComponent: <CircleDot size={13} /> },
   { id: 3, label: builderMode === 'pulseira' ? 'Conta de Destaque' : 'Pai-Nossos', shortLabel: builderMode === 'pulseira' ? 'Destaque' : 'Pai-Nosso', iconComponent: <Sparkles size={13} /> },

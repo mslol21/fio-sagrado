@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { useToast } from '../context/ToastContext';
-import type { Product, GlobalOption, Category, Collection, Saint } from '../types';
+import type { Product, GlobalOption, Category, Collection, Saint, Order, QuoteStatus, ProductLine, ProductAvailability } from '../types';
+import type { User } from '@supabase/supabase-js';
 import { 
   Plus, Edit2, Trash2, Save, X, ShoppingBag, Settings, ArrowLeft, Lock, 
   Palette, Grid, LineChart, LogOut, Download, LayoutDashboard, 
@@ -114,28 +115,29 @@ export const Admin: React.FC = () => {
   const [quickMargin, setQuickMargin] = useState<number>(100);
   
   // Security state
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | { id: string; email: string; role?: string } | null>(() => {
+    if (typeof window !== 'undefined' && import.meta.env.DEV) {
+      const localSession = localStorage.getItem('fio_sagrado_admin_session');
+      if (localSession) {
+        try {
+          const parsed = JSON.parse(localSession);
+          if (parsed && parsed.email) {
+            return parsed;
+          }
+        } catch {
+          localStorage.removeItem('fio_sagrado_admin_session');
+        }
+      }
+    }
+    return null;
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Check local admin session
-    const localSession = localStorage.getItem('fio_sagrado_admin_session');
-    if (localSession) {
-      try {
-        const parsed = JSON.parse(localSession);
-        if (parsed && parsed.email) {
-          setUser(parsed);
-          return;
-        }
-      } catch {
-        localStorage.removeItem('fio_sagrado_admin_session');
-      }
-    }
-
-    // 2. Check Supabase session
+    // Check Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
@@ -159,26 +161,6 @@ export const Admin: React.FC = () => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    // Master / Development Admin Check (permite acesso imediato sem depender de conta Supabase externa)
-    if (
-      (cleanEmail === 'admin@fiosagrado.com.br' && (cleanPass === 'admin123' || cleanPass === 'admin' || cleanPass === 'fiosagrado')) ||
-      (cleanEmail === 'admin' && (cleanPass === 'admin' || cleanPass === 'admin123')) ||
-      (cleanEmail.includes('admin') && cleanPass.length >= 4)
-    ) {
-      const mockAdminUser = {
-        id: 'local-admin-fio-sagrado',
-        email: cleanEmail.includes('@') ? cleanEmail : 'admin@fiosagrado.com.br',
-        role: 'authenticated',
-        app_metadata: { role: 'admin' },
-        user_metadata: { name: 'Administrador Fio Sagrado' }
-      };
-      localStorage.setItem('fio_sagrado_admin_session', JSON.stringify(mockAdminUser));
-      setUser(mockAdminUser);
-      showToast('Bem-vindo(a) ao Painel Administrativo Fio Sagrado!', 'success');
-      setLoginLoading(false);
-      return;
-    }
-
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -189,26 +171,12 @@ export const Admin: React.FC = () => {
         setUser(data.user);
         showToast('Login realizado com sucesso!', 'success');
       }
-    } catch {
-      setError('Credenciais não encontradas. Use o e-mail admin@fiosagrado.com.br e senha admin123 para acesso.');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Credenciais inválidas ou conta não cadastrada no Supabase.';
+      setError(errMsg);
     } finally {
       setLoginLoading(false);
     }
-  };
-
-  const handleQuickMasterLogin = () => {
-    setEmail('admin@fiosagrado.com.br');
-    setPassword('admin123');
-    const mockAdminUser = {
-      id: 'local-admin-fio-sagrado',
-      email: 'admin@fiosagrado.com.br',
-      role: 'authenticated',
-      app_metadata: { role: 'admin' },
-      user_metadata: { name: 'Administrador Fio Sagrado' }
-    };
-    localStorage.setItem('fio_sagrado_admin_session', JSON.stringify(mockAdminUser));
-    setUser(mockAdminUser);
-    showToast('Acesso de Administrador concedido!', 'success');
   };
 
   const handleLogout = async () => {
@@ -256,9 +224,11 @@ export const Admin: React.FC = () => {
   });
 
   const [formSettings, setFormSettings] = useState(settings);
-  useEffect(() => {
+  const [prevSettings, setPrevSettings] = useState(settings);
+  if (settings !== prevSettings) {
+    setPrevSettings(settings);
     setFormSettings(settings);
-  }, [settings]);
+  }
 
   const [formCollection, setFormCollection] = useState<Partial<Collection>>({
     name: '',
@@ -298,18 +268,12 @@ export const Admin: React.FC = () => {
   });
   const [categoryName, setCategoryName] = useState('');
 
-  useEffect(() => {
-    if (categories.length > 0 && !formProduct.category) {
-      setFormProduct(prev => ({ ...prev, category: categories[0].id }));
-    }
-  }, [categories]);
-
   // Product submission
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formProduct.name || formProduct.price === undefined) return;
     try {
-      const payload: any = { ...formProduct };
+      const payload: Partial<Product> = { ...formProduct };
       if (!payload.category && categories.length > 0) {
         payload.category = categories[0].id;
       }
@@ -355,9 +319,10 @@ export const Admin: React.FC = () => {
       setEditingProduct(null);
       setIsAddingProduct(false);
       resetProductForm();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar produto:', error);
-      showToast('Erro ao salvar produto: ' + (error.message || 'Falha no banco de dados'), 'error');
+      const err = error as Error;
+      showToast('Erro ao salvar produto: ' + (err?.message || 'Falha no banco de dados'), 'error');
     }
   };
 
@@ -422,20 +387,32 @@ export const Admin: React.FC = () => {
       });
       showToast(`Preço de "${quickCalcProduct.name}" atualizado para R$ ${newPrice.toFixed(2)}!`, 'success');
       setQuickCalcProduct(null);
-    } catch (err: any) {
-      showToast('Erro ao atualizar preço: ' + (err.message || 'Falha no banco'), 'error');
+    } catch (err: unknown) {
+      const error = err as Error;
+      showToast('Erro ao atualizar preço: ' + (error?.message || 'Falha no banco'), 'error');
     }
   };
 
+  // Collection submission
   // Collection submission
   const handleCollectionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formCollection.name) return;
     try {
       const slug = formCollection.slug || formCollection.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
-      const payload = { ...formCollection, slug } as any;
+      const payload: Omit<Collection, 'id' | 'created_at'> = {
+        name: formCollection.name,
+        slug,
+        description: formCollection.description || '',
+        image: formCollection.image || '',
+        banner: formCollection.banner || '',
+        status: formCollection.status || 'active',
+        total_items: formCollection.total_items ?? 3,
+        display_order: formCollection.display_order ?? 1,
+        is_active: formCollection.is_active !== false,
+      };
       if (editingCollection) {
-        await updateCollection(payload);
+        await updateCollection({ ...payload, id: editingCollection.id });
         showToast('Coleção atualizada!', 'success');
       } else {
         await addCollection(payload);
@@ -444,8 +421,9 @@ export const Admin: React.FC = () => {
       setEditingCollection(null);
       setIsAddingCollection(false);
       setFormCollection({ name: '', slug: '', description: '', image: '', banner: '', status: 'active', total_items: 3, display_order: 1, is_active: true });
-    } catch (err: any) {
-      showToast('Erro ao salvar coleção: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar coleção';
+      showToast('Erro ao salvar coleção: ' + msg, 'error');
     }
   };
 
@@ -456,14 +434,24 @@ export const Admin: React.FC = () => {
     try {
       const slug = formSaint.slug || formSaint.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
       const digitalPage = `/santos/${slug}`;
-      const payload = { 
-        ...formSaint, 
+      const payload: Omit<Saint, 'id' | 'created_at'> = { 
+        name: formSaint.name,
         slug, 
+        collection_id: formSaint.collection_id || undefined,
+        collection_number: formSaint.collection_number || 1,
+        subtitle: formSaint.subtitle || '',
+        keywords: formSaint.keywords || '',
+        history: formSaint.history || '',
+        meaning: formSaint.meaning || '',
+        curiosities: formSaint.curiosities || '',
+        prayer: formSaint.prayer || '',
+        image: formSaint.image || '',
+        is_active: formSaint.is_active !== false,
         digital_page_url: digitalPage,
         qr_code_url: formSaint.qr_code_url || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`https://${settings.domain || siteConfig.domain}${digitalPage}`)}`
-      } as any;
+      };
       if (editingSaint) {
-        await updateSaint(payload);
+        await updateSaint({ ...payload, id: editingSaint.id });
         showToast('Santo atualizado!', 'success');
       } else {
         await addSaint(payload);
@@ -472,8 +460,9 @@ export const Admin: React.FC = () => {
       setEditingSaint(null);
       setIsAddingSaint(false);
       setFormSaint({ name: '', slug: '', collection_id: '', collection_number: 1, subtitle: '', keywords: '', history: '', meaning: '', curiosities: '', prayer: '', image: '', qr_code_url: '', is_active: true });
-    } catch (err: any) {
-      showToast('Erro ao salvar santo: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar santo';
+      showToast('Erro ao salvar santo: ' + msg, 'error');
     }
   };
 
@@ -491,8 +480,9 @@ export const Admin: React.FC = () => {
       setEditingCategory(null);
       setIsAddingCategory(false);
       setCategoryName('');
-    } catch (err: any) {
-      showToast('Erro ao salvar categoria: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar categoria';
+      showToast('Erro ao salvar categoria: ' + msg, 'error');
     }
   };
 
@@ -517,12 +507,13 @@ export const Admin: React.FC = () => {
       setEditingOption(null);
       setIsAddingOption(false);
       setFormOption({ name: '', price: 0, image: '', categoryIds: [], group: 'Entremeio' });
-    } catch (err: any) {
-      showToast('Erro ao salvar opção: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar opção';
+      showToast('Erro ao salvar opção: ' + msg, 'error');
     }
   };
 
-  const handleAcceptOrder = async (order: any) => {
+  const handleAcceptOrder = async (order: Order) => {
     try {
       await updateOrderStatus(order.id, 'approved');
       await updateOrderProductionStatus(order.id, 'in_production');
@@ -534,8 +525,9 @@ export const Admin: React.FC = () => {
         date: new Date().toISOString().split('T')[0]
       });
       showToast('Pedido aprovado e enviado para produção!', 'success');
-    } catch (err: any) {
-      showToast('Erro ao aceitar pedido: ' + err.message, 'error');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao aceitar pedido';
+      showToast('Erro ao aceitar pedido: ' + msg, 'error');
     }
   };
 
@@ -587,25 +579,6 @@ export const Admin: React.FC = () => {
             </div>
           )}
 
-          {/* Quick Access Helper Pill */}
-          <div className="bg-gold/10 border border-gold/30 rounded-2xl p-4 mb-5 text-xs text-navy/80 space-y-2">
-            <div className="flex items-center gap-1.5 font-bold text-gold-dark">
-              <Sparkles size={14} />
-              <span>Acesso Rápido do Ateliê</span>
-            </div>
-            <p className="text-[11px] text-navy/60 leading-relaxed">
-              Login: <strong className="text-navy font-mono">admin@fiosagrado.com.br</strong><br />
-              Senha: <strong className="text-navy font-mono">admin123</strong>
-            </p>
-            <button
-              type="button"
-              onClick={handleQuickMasterLogin}
-              className="w-full mt-2 py-2 px-3 bg-white hover:bg-gold/15 border border-gold/40 text-gold-dark font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
-            >
-              ⚡ Entrar com Acesso Rápido
-            </button>
-          </div>
-
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="label-base">E-mail</label>
@@ -625,7 +598,7 @@ export const Admin: React.FC = () => {
                 required 
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
-                placeholder="admin123" 
+                placeholder="••••••••" 
                 className="input-base" 
               />
             </div>
@@ -1152,7 +1125,7 @@ export const Admin: React.FC = () => {
                           <td className="p-4">
                             <select
                               value={q.status}
-                              onChange={e => updateQuoteStatus(q.id, e.target.value as any)}
+                              onChange={e => updateQuoteStatus(q.id, e.target.value as QuoteStatus)}
                               className={`text-xs font-bold px-3 py-1.5 rounded-full border-0 outline-none cursor-pointer ${QUOTE_STATUS_LABELS[q.status]?.color || 'bg-gray-100'}`}
                             >
                               {Object.entries(QUOTE_STATUS_LABELS).map(([k, v]) => (
@@ -1490,8 +1463,9 @@ export const Admin: React.FC = () => {
               try {
                 await updateSettings(formSettings);
                 showToast('Configurações atualizadas com sucesso!', 'success');
-              } catch (err: any) {
-                showToast('Erro ao atualizar: ' + err.message, 'error');
+              } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : 'Erro ao atualizar configurações';
+                showToast('Erro ao atualizar: ' + msg, 'error');
               }
             }} className="bg-white rounded-3xl border border-gold/15 p-8 shadow-premium space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1601,7 +1575,7 @@ export const Admin: React.FC = () => {
                   </div>
                   <div>
                     <label className="label-base">Linha de Negócio</label>
-                    <select value={formProduct.line} onChange={e => setFormProduct({...formProduct, line: e.target.value as any})} className="input-base">
+                    <select value={formProduct.line} onChange={e => setFormProduct({...formProduct, line: e.target.value as ProductLine})} className="input-base">
                       <option value="devocionais">Devocionais</option>
                       <option value="leve-sua-fe">Leve Sua Fé</option>
                       <option value="colecoes">Coleções</option>
@@ -1834,7 +1808,7 @@ export const Admin: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="label-base">Disponibilidade</label>
-                    <select value={formProduct.availability} onChange={e => setFormProduct({...formProduct, availability: e.target.value as any})} className="input-base">
+                    <select value={formProduct.availability} onChange={e => setFormProduct({...formProduct, availability: e.target.value as ProductAvailability})} className="input-base">
                       <option value="ready">Pronta entrega</option>
                       <option value="made_to_order">Sob encomenda</option>
                       <option value="limited_edition">Edição limitada</option>
@@ -1905,8 +1879,9 @@ export const Admin: React.FC = () => {
                           setIsUploading(true);
                           const url = await uploadFile(file);
                           setFormProduct(prev => ({ ...prev, image: url, images: [url, ...(prev.images || [])] }));
-                        } catch (err: any) {
-                          alert('Erro no upload: ' + err.message);
+                        } catch (err: unknown) {
+                          const msg = err instanceof Error ? err.message : 'Erro ao carregar imagem';
+                          showToast('Erro no upload: ' + msg, 'error');
                         } finally {
                           setIsUploading(false);
                         }

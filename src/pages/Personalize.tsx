@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronRight, ChevronLeft, MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
@@ -31,6 +31,46 @@ const COLORS = [
 
 const steps = ['Devoção', 'Cores', 'Personalização', 'Resumo'];
 
+interface StepIndicatorProps {
+  steps: string[];
+  step: number;
+  onSelectStep: (step: number) => void;
+}
+
+const StepIndicator: React.FC<StepIndicatorProps> = ({ steps, step, onSelectStep }) => (
+  <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2">
+    {steps.map((s, idx) => (
+      <React.Fragment key={s}>
+        <button
+          type="button"
+          onClick={() => idx < step && onSelectStep(idx)}
+          className={`flex-shrink-0 flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-all ${
+            idx === step
+              ? 'text-navy'
+              : idx < step
+              ? 'text-gold-dark cursor-pointer'
+              : 'text-navy/30'
+          }`}
+        >
+          <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${
+            idx < step
+              ? 'bg-gold border-gold text-navy'
+              : idx === step
+              ? 'bg-navy border-navy text-white'
+              : 'bg-transparent border-navy/20 text-navy/30'
+          }`}>
+            {idx < step ? <Check size={12} strokeWidth={3} /> : idx + 1}
+          </span>
+          <span className="hidden sm:inline">{s}</span>
+        </button>
+        {idx < steps.length - 1 && (
+          <div className={`flex-1 h-px ${idx < step ? 'bg-gold' : 'bg-navy/10'} min-w-[16px]`} />
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
 const Personalize: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { settings } = useData();
@@ -47,12 +87,6 @@ const Personalize: React.FC = () => {
     message: '',
     notes: '',
   });
-
-  useEffect(() => {
-    if (productParam) {
-      setSelectedProduct(productParam);
-    }
-  }, [productParam]);
 
   const canProceed = [
     !!selectedDevotion,
@@ -99,40 +133,6 @@ const Personalize: React.FC = () => {
     const el = document.getElementById('wizard-form');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
-
-  const StepIndicator = () => (
-    <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2">
-      {steps.map((s, idx) => (
-        <React.Fragment key={s}>
-          <button
-            type="button"
-            onClick={() => idx < step && setStep(idx)}
-            className={`flex-shrink-0 flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-all ${
-              idx === step
-                ? 'text-navy'
-                : idx < step
-                ? 'text-gold-dark cursor-pointer'
-                : 'text-navy/30'
-            }`}
-          >
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all ${
-              idx < step
-                ? 'bg-gold border-gold text-navy'
-                : idx === step
-                ? 'bg-navy border-navy text-white'
-                : 'bg-transparent border-navy/20 text-navy/30'
-            }`}>
-              {idx < step ? <Check size={12} strokeWidth={3} /> : idx + 1}
-            </span>
-            <span className="hidden sm:inline">{s}</span>
-          </button>
-          {idx < steps.length - 1 && (
-            <div className={`flex-1 h-px ${idx < step ? 'bg-gold' : 'bg-navy/10'} min-w-[16px]`} />
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
 
   const stepContent = [
     // Step 0: Devoção
@@ -408,7 +408,7 @@ const Personalize: React.FC = () => {
               </button>
             </div>
 
-            <StepIndicator />
+            <StepIndicator steps={steps} step={step} onSelectStep={setStep} />
 
             <AnimatePresence mode="wait">
               <motion.div

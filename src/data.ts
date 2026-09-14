@@ -1,5 +1,5 @@
 import { siteConfig } from './config/site';
-import type { RosaryModel, CustomizationComponent } from './types';
+import type { RosaryModel, CustomizationComponent, Product } from './types';
 
 export const COMPANY_DATA = {
   name: siteConfig.name,
@@ -517,5 +517,5 @@ export const DEFAULT_CUSTOMIZATION_COMPONENTS: CustomizationComponent[] = [
   }
 ];
 
-export const INITIAL_PRODUCTS: any[] = [];
+export const INITIAL_PRODUCTS: Product[] = [];
 

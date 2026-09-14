@@ -69,7 +69,7 @@ export type Product = {
   namePrice?: number;
   variations?: Variation[];
   customizationLists?: CustomizationList[];
-  selectedVariation?: any;
+  selectedVariation?: Variation | GlobalOption | null;
 
   // Disponibilidade e estoque
   availability?: ProductAvailability;
@@ -91,6 +91,7 @@ export type Product = {
   weight_grams?: number;
   dimensions?: string;
   care_instructions?: string;
+  customization?: CustomizationDetails;
 }
 
 export type CustomizationDetails = {
@@ -107,13 +108,13 @@ export type CustomizationDetails = {
     customName?: string;
     customMessage?: string;
     notes?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | CustomizationComponent | CustomizationComponent[] | RosaryModel | undefined;
   };
 }
 
 export type CartItem = Product & {
   quantity: number;
-  selectedVariation?: any;
+  selectedVariation?: Variation | GlobalOption | null;
   customization?: CustomizationDetails;
 }
 
@@ -268,7 +269,7 @@ export type RosaryModel = {
   description?: string;
   image?: string;
   base_price: number;
-  layout?: Record<string, any>;
+  layout?: Record<string, unknown>;
   product_type?: 'rosary' | 'bracelet';
   is_active: boolean;
   display_order?: number;
@@ -305,9 +306,9 @@ export type CustomizationComponent = {
   compatibility?: {
     models?: string[];
     colors?: string[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;

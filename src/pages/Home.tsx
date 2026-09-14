@@ -28,7 +28,7 @@ export const Home: React.FC = () => {
 
   // Filtragem de produtos para a vitrine
   const displayedProducts = useMemo(() => {
-    let list = products.filter(p => p.isActive !== false);
+    const list = products.filter(p => p.isActive !== false);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
